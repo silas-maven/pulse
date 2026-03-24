@@ -65,6 +65,16 @@ struct MenuBarView: View {
 
             // Footer
             HStack {
+                Button("Reset Session") {
+                    serviceManager.resetSession()
+                }
+                .font(.system(size: 10, design: .monospaced))
+                .buttonStyle(.borderless)
+                .foregroundStyle(.orange)
+                .help("Clears OpenClaw sessions and restarts the gateway")
+
+                Spacer()
+
                 Button("Quit") {
                     NSApplication.shared.terminate(nil)
                 }

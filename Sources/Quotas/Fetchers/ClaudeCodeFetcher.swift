@@ -2,6 +2,7 @@ import Foundation
 
 enum ClaudeCodeFetcher {
     /// Fetches Claude usage from the internal OAuth usage endpoint.
+    /// Retries once on 429 (rate limit) after respecting Retry-After header.
     static func fetch() async -> QuotaStatus {
         guard let token = getOAuthToken() else {
             return .error("No OAuth token")
@@ -11,26 +12,39 @@ enum ClaudeCodeFetcher {
             return .error("Bad URL")
         }
 
-        var req = URLRequest(url: url)
-        req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        req.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
-        req.timeoutInterval = 10
+        for attempt in 0..<2 {
+            var req = URLRequest(url: url)
+            req.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            req.setValue("oauth-2025-04-20", forHTTPHeaderField: "anthropic-beta")
+            req.timeoutInterval = 10
 
-        do {
-            let (data, response) = try await URLSession.shared.data(for: req)
-            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
-                let code = (response as? HTTPURLResponse)?.statusCode ?? 0
-                return .error("HTTP \(code)")
+            do {
+                let (data, response) = try await URLSession.shared.data(for: req)
+                guard let http = response as? HTTPURLResponse else {
+                    return .error("No HTTP response")
+                }
+
+                if http.statusCode == 429 && attempt == 0 {
+                    let wait = Double(http.value(forHTTPHeaderField: "Retry-After") ?? "30") ?? 30
+                    try await Task.sleep(for: .seconds(min(wait, 60)))
+                    continue
+                }
+
+                guard http.statusCode == 200 else {
+                    return .error("HTTP \(http.statusCode)")
+                }
+
+                guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                    return .error("Bad JSON")
+                }
+
+                return .loaded(buildQuotaData(json))
+            } catch {
+                return .error(error.localizedDescription)
             }
-
-            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-                return .error("Bad JSON")
-            }
-
-            return .loaded(buildQuotaData(json))
-        } catch {
-            return .error(error.localizedDescription)
         }
+
+        return .error("Rate limited")
     }
 
     private static func getOAuthToken() -> String? {

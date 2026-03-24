@@ -6,7 +6,8 @@ enum CodexFetcher {
         let pipe = Pipe()
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/bin/zsh")
-        proc.arguments = ["-l", "-c", "openclaw status --json 2>/dev/null"]
+        // Use full PATH so openclaw resolves when launched from .app bundle
+        proc.arguments = ["-l", "-c", "export PATH=\"$HOME/.local/bin:$HOME/Library/pnpm:/opt/homebrew/bin:/usr/local/bin:$PATH\"; openclaw status --json 2>/dev/null"]
         proc.standardOutput = pipe
         proc.standardError = FileHandle.nullDevice
 
