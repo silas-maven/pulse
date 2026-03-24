@@ -2,6 +2,8 @@
 
 A lightweight macOS menu bar app for managing local dev services and tracking AI coding tool quotas.
 
+![Pulse preview](assets/pulse-social-preview.jpg)
+
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-blue)
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
