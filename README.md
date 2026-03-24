@@ -6,6 +6,8 @@ A lightweight macOS menu bar app for managing local dev services and tracking AI
 ![Swift 6](https://img.shields.io/badge/Swift-6-orange)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
+![Pulse social preview](assets/pulse-social-preview.jpg)
+
 ## What it does
 
 Pulse sits in your menu bar and gives you two things at a glance:
@@ -17,7 +19,7 @@ Pulse sits in your menu bar and gives you two things at a glance:
 ## Install
 
 ```bash
-git clone https://github.com/AzClaw/pulse.git
+git clone https://github.com/silas-maven/pulse.git
 cd pulse
 ./install.sh
 ```
